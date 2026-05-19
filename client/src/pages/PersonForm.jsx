@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/client';
 
@@ -16,6 +16,10 @@ export default function PersonForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [photo, setPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [existingPhoto, setExistingPhoto] = useState(null);
+  const fileRef = useRef();
 
   useEffect(() => {
     if (!isEdit) return;
@@ -30,6 +34,8 @@ export default function PersonForm() {
           bio: p.bio || '', isArchival: p.isArchival || false,
           familyLine: p.familyLine || '', archivalNote: p.archivalNote || '',
         });
+        const mainPhoto = p.media?.find(m => m.type === 'PHOTO');
+        if (mainPhoto) setExistingPhoto(mainPhoto);
       })
       .finally(() => setLoading(false));
   }, [id, isEdit]);
@@ -37,6 +43,13 @@ export default function PersonForm() {
   const set = (field) => (e) => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setForm(f => ({ ...f, [field]: val }));
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
@@ -49,13 +62,21 @@ export default function PersonForm() {
       if (!payload.familyLine) delete payload.familyLine;
       if (!payload.archivalNote) delete payload.archivalNote;
 
+      let personId = id;
       if (isEdit) {
         await api.put(`/persons/${id}`, payload);
-        navigate(`/people/${id}`);
       } else {
         const { data } = await api.post('/persons', payload);
-        navigate(`/people/${data.id}`);
+        personId = data.id;
       }
+
+      if (photo) {
+        const fd = new FormData();
+        fd.append('file', photo);
+        await api.post(`/media/upload/${personId}`, fd);
+      }
+
+      navigate(`/people/${personId}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Помилка збереження');
     } finally {
@@ -104,6 +125,47 @@ export default function PersonForm() {
           <label htmlFor="isArchival" className="text-sm text-amber-800 font-medium">
             Архівна особа (зв'язок із родом не підтверджено)
           </label>
+        </div>
+
+        {/* Photo upload */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">Фото</label>
+          <div className="flex items-center gap-4">
+            <div
+              onClick={() => fileRef.current.click()}
+              className="w-24 h-24 rounded-xl border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-colors overflow-hidden flex-shrink-0"
+            >
+              {photoPreview || existingPhoto ? (
+                <img
+                  src={photoPreview || existingPhoto?.url}
+                  alt="фото"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-3xl text-stone-300">📷</span>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => fileRef.current.click()}
+                className="text-sm text-emerald-700 hover:text-emerald-900 font-medium"
+              >
+                {photoPreview || existingPhoto ? 'Змінити фото' : 'Завантажити фото'}
+              </button>
+              {photoPreview && (
+                <p className="text-xs text-stone-500 mt-1">{photo?.name}</p>
+              )}
+              <p className="text-xs text-stone-400 mt-1">JPG, PNG до 20 МБ</p>
+            </div>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="hidden"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
