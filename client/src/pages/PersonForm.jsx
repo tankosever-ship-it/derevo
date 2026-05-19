@@ -2,6 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/client';
 
+const inputCls = 'w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500';
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}
+
 const empty = {
   firstName: '', lastName: '', maidenName: '', gender: 'UNKNOWN',
   birthDate: '', birthPlace: '', deathDate: '', deathPlace: '',
@@ -86,22 +97,6 @@ export default function PersonForm() {
 
   if (loading) return <div className="text-center text-stone-500 py-20">Завантаження...</div>;
 
-  const Field = ({ label, children }) => (
-    <div>
-      <label className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
-      {children}
-    </div>
-  );
-
-  const Input = ({ field, ...props }) => (
-    <input
-      value={form[field]}
-      onChange={set(field)}
-      className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      {...props}
-    />
-  );
-
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
@@ -136,57 +131,38 @@ export default function PersonForm() {
               className="w-24 h-24 rounded-xl border-2 border-dashed border-stone-300 flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-colors overflow-hidden flex-shrink-0"
             >
               {photoPreview || existingPhoto ? (
-                <img
-                  src={photoPreview || existingPhoto?.url}
-                  alt="фото"
-                  className="w-full h-full object-cover"
-                />
+                <img src={photoPreview || existingPhoto?.url} alt="фото" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-3xl text-stone-300">📷</span>
               )}
             </div>
             <div>
-              <button
-                type="button"
-                onClick={() => fileRef.current.click()}
-                className="text-sm text-emerald-700 hover:text-emerald-900 font-medium"
-              >
+              <button type="button" onClick={() => fileRef.current.click()}
+                className="text-sm text-emerald-700 hover:text-emerald-900 font-medium">
                 {photoPreview || existingPhoto ? 'Змінити фото' : 'Завантажити фото'}
               </button>
-              {photoPreview && (
-                <p className="text-xs text-stone-500 mt-1">{photo?.name}</p>
-              )}
+              {photoPreview && <p className="text-xs text-stone-500 mt-1">{photo?.name}</p>}
               <p className="text-xs text-stone-400 mt-1">JPG, PNG до 20 МБ</p>
             </div>
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            className="hidden"
-          />
+          <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Ім'я *">
-            <Input field="firstName" placeholder="Іван" required />
+            <input value={form.firstName} onChange={set('firstName')} placeholder="Іван" required className={inputCls} />
           </Field>
           <Field label="Прізвище *">
-            <Input field="lastName" placeholder="Коваленко" required />
+            <input value={form.lastName} onChange={set('lastName')} placeholder="Коваленко" required className={inputCls} />
           </Field>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Дівоче прізвище">
-            <Input field="maidenName" placeholder="Шевченко" />
+            <input value={form.maidenName} onChange={set('maidenName')} placeholder="Шевченко" className={inputCls} />
           </Field>
           <Field label="Стать">
-            <select
-              value={form.gender}
-              onChange={set('gender')}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
+            <select value={form.gender} onChange={set('gender')} className={inputCls}>
               <option value="UNKNOWN">Не вказано</option>
               <option value="MALE">Чоловік</option>
               <option value="FEMALE">Жінка</option>
@@ -196,19 +172,19 @@ export default function PersonForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Дата народження">
-            <Input field="birthDate" placeholder="1890 або 12.03.1890" />
+            <input value={form.birthDate} onChange={set('birthDate')} placeholder="1890 або 12.03.1890" className={inputCls} />
           </Field>
           <Field label="Місце народження">
-            <Input field="birthPlace" placeholder="м. Полтава" />
+            <input value={form.birthPlace} onChange={set('birthPlace')} placeholder="м. Полтава" className={inputCls} />
           </Field>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Дата смерті">
-            <Input field="deathDate" placeholder="1945 або 09.05.1945" />
+            <input value={form.deathDate} onChange={set('deathDate')} placeholder="1945 або 09.05.1945" className={inputCls} />
           </Field>
           <Field label="Місце смерті">
-            <Input field="deathPlace" placeholder="с. Мала Девиця" />
+            <input value={form.deathPlace} onChange={set('deathPlace')} placeholder="с. Мала Девиця" className={inputCls} />
           </Field>
         </div>
 
@@ -218,14 +194,14 @@ export default function PersonForm() {
             onChange={set('bio')}
             rows={4}
             placeholder="Розкажіть про цю людину: де жила, чим займалась, що відомо..."
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+            className={`${inputCls} resize-none`}
           />
         </Field>
 
         {form.isArchival && (
           <div className="space-y-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <Field label="Родова лінія (прізвище роду)">
-              <Input field="familyLine" placeholder="Наприклад: Коваленки, Шевченки..." />
+              <input value={form.familyLine} onChange={set('familyLine')} placeholder="Наприклад: Коваленки, Шевченки..." className={inputCls} />
             </Field>
             <Field label="Нотатки про можливий зв'язок">
               <textarea
@@ -233,31 +209,23 @@ export default function PersonForm() {
                 onChange={set('archivalNote')}
                 rows={3}
                 placeholder="Де знайдено, чому може бути пов'язана з родом..."
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                className={`${inputCls} resize-none`}
               />
             </Field>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-3 py-2 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-3 py-2 text-sm">{error}</div>
         )}
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-6 py-2 rounded-lg transition-colors disabled:opacity-60"
-          >
+          <button type="submit" disabled={saving}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-medium px-6 py-2 rounded-lg transition-colors disabled:opacity-60">
             {saving ? 'Збереження...' : isEdit ? 'Зберегти зміни' : 'Додати'}
           </button>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="border border-stone-300 text-stone-700 font-medium px-6 py-2 rounded-lg hover:bg-stone-50 transition-colors"
-          >
+          <button type="button" onClick={() => navigate(-1)}
+            className="border border-stone-300 text-stone-700 font-medium px-6 py-2 rounded-lg hover:bg-stone-50 transition-colors">
             Скасувати
           </button>
         </div>
