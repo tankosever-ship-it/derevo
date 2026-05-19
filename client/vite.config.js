@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     host: '::',
     port: 5173,
+    allowedHosts: 'all',
     proxy: {
       '/api': 'http://localhost:3001',
       '/uploads': 'http://localhost:3001',
