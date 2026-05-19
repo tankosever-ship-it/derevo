@@ -14,6 +14,7 @@ COPY server/package*.json ./server/
 RUN cd server && npm ci
 
 COPY server/ ./server/
+RUN cd server && npx prisma generate
 
 # Copy built frontend into server's public folder
 RUN mkdir -p server/public && cp -r client/dist/. server/public/
