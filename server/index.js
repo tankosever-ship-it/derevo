@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const personsRoutes = require('./routes/persons');
 const relationshipsRoutes = require('./routes/relationships');
 const mediaRoutes = require('./routes/media');
+const clansRoutes = require('./routes/clans');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/persons', personsRoutes);
 app.use('/api/relationships', relationshipsRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/clans', clansRoutes);
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
