@@ -2,6 +2,7 @@ services:
   - type: web
     name: derevo
     env: docker
+    plan: free
     dockerfilePath: ./Dockerfile
     envVars:
       - key: DATABASE_URL
